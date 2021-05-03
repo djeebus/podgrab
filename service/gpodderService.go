@@ -14,11 +14,11 @@ import (
 const BASE = "https://gpodder.net"
 
 func Query(q string) []*model.CommonSearchResultModel {
-	url := fmt.Sprintf("%s/search.json?q=%s", BASE, url.QueryEscape(q))
+	searchURL := fmt.Sprintf("%s/search.json?q=%s", BASE, url.QueryEscape(q))
 
-	body, _ := makeQuery(url)
+	body, _ := makeQuery(searchURL)
 	var response []model.GPodcast
-	json.Unmarshal(body, &response)
+	logError(json.Unmarshal(body, &response))
 
 	var toReturn []*model.CommonSearchResultModel
 
@@ -28,6 +28,7 @@ func Query(q string) []*model.CommonSearchResultModel {
 
 	return toReturn
 }
+
 func ByTag(tag string, count int) []model.GPodcast {
 	url := fmt.Sprintf("%s/api/2/tag/%s/%d.json", BASE, url.QueryEscape(tag), count)
 

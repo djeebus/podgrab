@@ -104,7 +104,7 @@ func changeOwnership(path string) {
 	fmt.Println(path)
 	if err1 == nil && err2 == nil {
 		fmt.Println(path + " : Attempting change")
-		os.Chown(path, uid, gid)
+		logError(os.Chown(path, uid, gid))
 	}
 
 }
@@ -156,7 +156,7 @@ func deleteOldBackup() {
 	toDelete := files[5:]
 	for _, file := range toDelete {
 		fmt.Println(file)
-		DeleteFile(file)
+		logError(DeleteFile(file))
 	}
 }
 
@@ -257,7 +257,7 @@ func createFolder(folder string, parent string) string {
 	//str := stringy.New(folder)
 	folderPath := path.Join(parent, folder)
 	if _, err := os.Stat(folderPath); os.IsNotExist(err) {
-		os.MkdirAll(folderPath, 0777)
+		logError(os.MkdirAll(folderPath, 0777))
 		changeOwnership(folderPath)
 	}
 	return folderPath

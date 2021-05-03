@@ -193,8 +193,9 @@ func main() {
 	go assetEnv()
 	go intiCron()
 
-	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
-
+	if err := r.Run(); err != nil { // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+		panic(err)
+	}
 }
 func setupSettings() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -214,13 +215,14 @@ func intiCron() {
 		log.Print(err)
 	}
 	service.UnlockMissedJobs()
+
 	//gocron.Every(uint64(checkFrequency)).Minutes().Do(service.DownloadMissingEpisodes)
-	gocron.Every(uint64(checkFrequency)).Minutes().Do(service.RefreshEpisodes)
-	gocron.Every(uint64(checkFrequency)).Minutes().Do(service.CheckMissingFiles)
-	gocron.Every(uint64(checkFrequency) * 2).Minutes().Do(service.UnlockMissedJobs)
-	gocron.Every(uint64(checkFrequency) * 3).Minutes().Do(service.UpdateAllFileSizes)
-	gocron.Every(uint64(checkFrequency)).Minutes().Do(service.DownloadMissingImages)
-	gocron.Every(2).Days().Do(service.CreateBackup)
+	panicIf(gocron.Every(uint64(checkFrequency)).Minutes().Do(service.RefreshEpisodes))
+	panicIf(gocron.Every(uint64(checkFrequency)).Minutes().Do(service.CheckMissingFiles))
+	panicIf(gocron.Every(uint64(checkFrequency) * 2).Minutes().Do(service.UnlockMissedJobs))
+	panicIf(gocron.Every(uint64(checkFrequency) * 3).Minutes().Do(service.UpdateAllFileSizes))
+	panicIf(gocron.Every(uint64(checkFrequency)).Minutes().Do(service.DownloadMissingImages))
+	panicIf(gocron.Every(2).Days().Do(service.CreateBackup))
 	<-gocron.Start()
 }
 
@@ -228,4 +230,10 @@ func assetEnv() {
 	log.Println("Config Dir: ", os.Getenv("CONFIG"))
 	log.Println("Assets Dir: ", os.Getenv("DATA"))
 	log.Println("Check Frequency (mins): ", os.Getenv("CHECK_FREQUENCY"))
+}
+
+func panicIf(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
